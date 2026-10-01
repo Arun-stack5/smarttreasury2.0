@@ -1,0 +1,6 @@
+streamlit>=1.42
+Authlib>=1.3.2
+pandas
+numpy
+gspread>=6.0
+openpyxl
