@@ -1,10 +1,16 @@
 """SmartTreasury dashboard.  Run:  streamlit run app.py"""
-import io
-import pandas as pd
+import io, os, traceback
 import streamlit as st
-from engine import DEFAULT_CONFIG, run_matcher, inr
-from sample_data import SAMPLE_ROWS
-import treasury_sheet as sh
+try:
+    import pandas as pd
+    from engine import DEFAULT_CONFIG, run_matcher, inr
+    from sample_data import SAMPLE_ROWS
+    import treasury_sheet as sh
+except Exception:                       # show the real crash on screen instead of "Oh no"
+    st.error("The app crashed while loading. Send this text to your helper:")
+    st.code(traceback.format_exc())
+    st.write("Files next to app.py on the server:", sorted(os.listdir(os.path.dirname(os.path.abspath(__file__)))))
+    st.stop()
 
 st.set_page_config(page_title="SmartTreasury", page_icon="💰", layout="wide")
 CFG = dict(DEFAULT_CONFIG)
