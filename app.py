@@ -15,6 +15,37 @@ def auth_enabled():
     try: return "auth" in st.secrets
     except Exception: return False
 
+def auth_debug():
+    import importlib.metadata as md
+    st.title("🔧 Login diagnostics")
+    st.write("Streamlit version:", st.__version__)
+    try: st.write("✅ Authlib version:", md.version("Authlib"))
+    except Exception: st.error("❌ Authlib is NOT installed → add `Authlib>=1.3.2` to requirements.txt, push, reboot.")
+    try: keys = list(st.secrets.keys())
+    except Exception: keys = []
+    st.write("Top-level secret sections found:", keys)
+    if "auth" not in keys:
+        st.error("❌ No [auth] section in Secrets. Add it in Settings → Secrets and reboot."); return
+    a = dict(st.secrets["auth"])
+    need = ["redirect_uri", "cookie_secret", "client_id", "client_secret", "server_metadata_url"]
+    for k in need: st.write("✅" if str(a.get(k, "")).strip() else "❌ MISSING or empty:", k)
+    st.write("Other keys inside [auth]:", [k for k in a if k not in need])
+    host = st.context.headers.get("Host", "")
+    expected = f"https://{host}/oauth2callback"
+    ru = str(a.get("redirect_uri", ""))
+    st.write("redirect_uri in Secrets:", ru)
+    st.write("redirect_uri should be  :", expected)
+    st.write("✅ redirect_uri matches this app" if ru == expected else "❌ redirect_uri does NOT match this app's address")
+    st.write("server_metadata_url OK:", str(a.get("server_metadata_url", "")) == "https://accounts.google.com/.well-known/openid-configuration")
+    st.write("client_id looks like Google's:", str(a.get("client_id", "")).endswith(".apps.googleusercontent.com"))
+    st.write("cookie_secret length:", len(str(a.get("cookie_secret", ""))), "(should be 20+)")
+    g = dict(st.secrets.get("gcp_service_account", {}))
+    st.write("gcp_service_account keys:", sorted(g.keys()))
+    st.write("private_key starts correctly:", str(g.get("private_key", "")).startswith("-----BEGIN PRIVATE KEY-----"))
+
+if st.query_params.get("debug") == "1":
+    auth_debug(); st.stop()
+
 if auth_enabled():                      # hosted mode: Google login, one sheet per user
     if not st.user.is_logged_in:
         st.title("💰 SmartTreasury")
