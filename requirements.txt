@@ -1,0 +1,8 @@
+streamlit>=1.42
+pandas
+numpy
+gspread>=6.0
+google-auth
+google-auth-oauthlib
+requests
+openpyxl
